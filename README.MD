@@ -13,7 +13,7 @@
     private LocalDateTime updatedAt;
 ```
 
-### Project Moeno
+### 학습 노트
 - 스프링이 객체를 생성할 때 빈 생성자로 new 을 하기 때문에 `@AllArgsConstructor` 를 사용했다면 `@NoArgsConstructor` 를 꼭 넣어줘야 한다.
 - Entity 객체 생성 시 아래 애너테이션들은 필수
 ```java
@@ -24,4 +24,4 @@
 @Entity
 ```
  
-"# Spring-Security" 
+
