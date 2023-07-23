@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class LoginService implements UserDetailsService {
 
     // UserRepository 의 findByUsername이 필요하다. (로그인 할 때 세션을 만들어 준다)
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     // 시큐리티로 로그인이 될 때, 이 함수를 실행해서 username을 체크!!
     // 없으면 오류

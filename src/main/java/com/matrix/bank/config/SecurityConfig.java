@@ -1,12 +1,15 @@
 package com.matrix.bank.config;
 
+import com.matrix.bank.config.jwt.JwtAuthenticationFilter;
 import com.matrix.bank.domain.user.UserEnum;
 import com.matrix.bank.util.CustomResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -31,7 +34,18 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // todo: JWT 필터 등록이 필요함
+    // JWT 필터 등록이 필요함
+    // 필터 등록이 방법이 버전업 되면서 변경 되었다. 내부 클래스가 하나 필요함
+    public class CustomSecurityFilterManager extends AbstractHttpConfigurer<CustomSecurityFilterManager, HttpSecurity> {
+        @Override
+        public void configure(HttpSecurity builder) throws Exception {
+            AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
+            // 필터 등록은 여기서 하면 된다.
+            // authenticationManager()가 없으면 강제 세션 로그인을 할 수 없다.
+            builder.addFilter(new JwtAuthenticationFilter(authenticationManager));
+            super.configure(builder);
+        }
+    }
 
 
     // JWT 서버를 만들 예정!! Session 사용 안함.
@@ -55,13 +69,16 @@ public class SecurityConfig {
         // httpBasic은 브라우저가 팝업창을 이용해서 사용자 인증을 진행한다.
         http.httpBasic().disable();
 
+        // 필터 적용
+        http.apply(new CustomSecurityFilterManager());
+
         // Exception 가로채기
         http.exceptionHandling().authenticationEntryPoint(
                 (request, response, authException) -> {
                     String uri = request.getRequestURI();
                     log.debug("디버그 : uri = {}", uri);
-                    CustomResponseUtil.unAuthenciation(response, "로그인을 해주세요.");
-        });
+                    CustomResponseUtil.unAuthentication(response, "로그인을 해주세요.");
+                });
 
         http.authorizeRequests()
                 .antMatchers("/api/s/**").authenticated()
