@@ -1,6 +1,7 @@
 package com.matrix.bank.config;
 
 import com.matrix.bank.domain.user.UserEnum;
+import com.matrix.bank.util.CustomResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -57,9 +58,9 @@ public class SecurityConfig {
         // Exception 가로채기
         http.exceptionHandling().authenticationEntryPoint(
                 (request, response, authException) -> {
-//                    response.setContentType("application/json; charset=utf-8");
-                    response.setStatus(403);
-                    response.getWriter().println("error"); // 예쁘게 메시지를 포장하는 공통적인 응답 DTO를 만들어 보자!!
+                    String uri = request.getRequestURI();
+                    log.debug("디버그 : uri = {}", uri);
+                    CustomResponseUtil.unAuthenciation(response, "로그인을 해주세요.");
         });
 
         http.authorizeRequests()
