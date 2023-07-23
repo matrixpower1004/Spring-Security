@@ -56,7 +56,7 @@ class UserServiceTest extends DummyObject {
         when(userRepository.save(any())).thenReturn(matrix);  // 정상적인 User 객체를 리턴
 
         // When
-        JoinRespDto joinRespDto = userService.userJoin(joinReqDto);
+        JoinRespDto joinRespDto = userService.joinUser(joinReqDto);
         System.out.println("테스트 : " + joinRespDto);
 
         // Then
