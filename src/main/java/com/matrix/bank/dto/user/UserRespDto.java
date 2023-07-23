@@ -11,7 +11,6 @@ import lombok.Setter;
  */
 public class UserRespDto {
 
-
     @Getter
     @Setter
     public static class JoinRespDto {

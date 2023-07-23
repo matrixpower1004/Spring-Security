@@ -29,7 +29,7 @@ public class UserService {
 
     // 서비스는 Dto를 요청받고, Dto로 응답한다.
     @Transactional
-    public JoinRespDto userJoin(JoinReqDto joinReqDto) {
+    public JoinRespDto joinUser(JoinReqDto joinReqDto) {
         // 1. 동일 유저 네임 존해 검사
         Optional<User> userOp =  userRepository.findByUsername(joinReqDto.getUsername());
         if (userOp.isPresent()) {
