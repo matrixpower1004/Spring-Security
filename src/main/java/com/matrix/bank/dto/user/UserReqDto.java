@@ -2,7 +2,6 @@ package com.matrix.bank.dto.user;
 
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserEnum;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -23,6 +22,14 @@ public class UserReqDto {
     @Getter
     @Setter
     public static class JoinReqDto {
+
+        @Getter
+        @Setter
+        public static class LoginReqDto {
+            // Controller 레이어로 가기 전이라 여기서는 validation 체크를 하지 못한다.
+            private String username;
+            private String password;
+        }
         // 영문, 숫자만 가능, 길이 최소 2~20자 이내, 한글 공백은 들어가면 안 된다.
         @Pattern(regexp = "^[a-zA-Z0-9]{2,20}$", message = "아이디는 영문, 숫자만 가능하며, 2~20자 이내로 입력해주세요.")
         @NotEmpty   // null이거나 공백일 수 없다.
