@@ -6,6 +6,7 @@ import com.matrix.bank.dto.user.UserRespDto.LoginRespDto;
 import com.matrix.bank.util.CustomResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,7 +50,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             // 강제 로그인을 위한 토큰 생성
             UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(loginReqDto.getUsername(), loginReqDto.getPassword());
+                    new UsernamePasswordAuthenticationToken(
+                            loginReqDto.getUsername(), loginReqDto.getPassword()
+                    );
 
             // UserDetailsService의 loadUserByUsername() 호출
             // JWT를 쓴다 하더라도 컨트롤러 진입을 하면 시큐리티의 권한체크, 인증체크의 도움을 받을 수 있게 세션을 만든다.
@@ -73,7 +76,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             HttpServletRequest request, HttpServletResponse response, AuthenticationException failed)
             throws IOException, ServletException {
         // 로그인 실패시 응답을 내려줄 Dto도 하나 만들면 좋을 것 같다. 서버에서 내려주는 응답은 통잉설이 있어야 한다.
-        CustomResponseUtil.unAuthentication(response, "로그인 실패");
+        CustomResponseUtil.fail(response, "로그인 실패", HttpStatus.UNAUTHORIZED);
     }
 
     // return authentication 잘 작동하면 successfulAuthentication 메서드가 호출된다.
