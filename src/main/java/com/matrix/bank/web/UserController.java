@@ -37,8 +37,6 @@ public class UserController {
     @PostMapping(("/join"))
     public ResponseEntity<?> join(@RequestBody @Valid JoinReqDto joinReqDto, BindingResult bindingResult) {
 
-
-
         JoinRespDto joinRespDto = userService.joinUser(joinReqDto);
 
         // HTTP status code 201 -> 뭔가가 하나 만들어졌다는 것
