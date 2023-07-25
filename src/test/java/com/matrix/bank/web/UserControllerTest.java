@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.matrix.bank.dto.user.UserReqDto.JoinReqDto;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * date           : 2023-07-23
  * description    :
  */
+@Transactional
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 class UserControllerTest extends DummyObject {
@@ -35,7 +37,7 @@ class UserControllerTest extends DummyObject {
 
     @BeforeEach
     public void setUp() {
-        dataSetting();
+        userRepository.save(newUser("bank", "돈이좋아"));
     }
 
     @Test
@@ -65,10 +67,10 @@ class UserControllerTest extends DummyObject {
     void join_fail_test() throws Exception {
         // Given
         JoinReqDto joinReqDto = new JoinReqDto();
-        joinReqDto.setUsername("ssar");
+        joinReqDto.setUsername("bank");
         joinReqDto.setPassword("1234");
-        joinReqDto.setEmail("ssar@nate.com");
-        joinReqDto.setFullname("쌀");
+        joinReqDto.setEmail("bank@nate.com");
+        joinReqDto.setFullname("돈이좋아");
 
         String requestBody = om.writeValueAsString(joinReqDto);
 //        System.out.println("테스트 : " + requestBody);
@@ -85,6 +87,6 @@ class UserControllerTest extends DummyObject {
     }
 
     private void dataSetting() {
-        userRepository.save(newUser("ssar", "쌀"));
+
     }
 }

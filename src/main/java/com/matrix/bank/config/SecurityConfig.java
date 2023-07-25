@@ -87,9 +87,10 @@ public class SecurityConfig {
             CustomResponseUtil.fail(response, "권한이 없습니다.", HttpStatus.FORBIDDEN);
         });
 
+        // https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
         http.authorizeRequests()
                 .antMatchers("/api/s/**").authenticated()
-                .antMatchers("/api/admin/**").hasRole("" + UserEnum.ADMIN) // 최근 공식문서에서는 ROLE_ 안 붙여도 된다.
+                .antMatchers("/api/admin/**").hasRole(String.valueOf(UserEnum.ADMIN)) // 최근 공식문서에서는 ROLE_ 안 붙여도 된다.
                 .anyRequest().permitAll();
         return http.build();
     }
@@ -107,3 +108,4 @@ public class SecurityConfig {
         return source;
     }
 }
+
