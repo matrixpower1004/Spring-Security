@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             // UserDetailsService의 loadUserByUsername() 호출
             // JWT를 쓴다 하더라도 컨트롤러 진입을 하면 시큐리티의 권한체크, 인증체크의 도움을 받을 수 있게 세션을 만든다.
-            // 이 세션의 유효기간은 request하고, response 하면 끝.
+            // 이 세션의 유효기간은 request 를 받아서, response 하면 끝!!
             Authentication authentication = authenticationManager.authenticate(authenticationToken);
             return authentication;
 
