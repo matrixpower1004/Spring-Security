@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * date           : 2023-07-22
  * description    :
  */
-@NoArgsConstructor  // 스프링이 User 객체를 생성할 때 빈생성자로 new를 하기 때문
+@NoArgsConstructor  // 스프링이 User 객체를 생성할 때 빈 생성자로 new를 하기 때문
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "account_tb")
@@ -27,7 +27,7 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 4) // 테스트의 편의를 위해 4자리로 수정
     private Long number;    // 계좌번호
 
     @Column(nullable = false, length = 4)
