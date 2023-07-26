@@ -30,3 +30,4 @@ spring:
 logging:
   level:
     '[com.matrix.bank]': DEBUG
+    '[org.hibernate.type]': TRACE
