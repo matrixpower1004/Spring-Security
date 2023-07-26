@@ -1,8 +1,8 @@
 # Junit Bank App
 
 ### Jpa LocalDateTime 자동으로 생성하는 법
-- @EnableJpaAuditing (Main Application 에)
-- @EntityListeners(AuditingEntityListener.class) (Entity class 에)
+- `@EnableJpaAuditing` (Main Application 에)
+- `@EntityListeners(AuditingEntityListener.class)` (Entity class 에)
 ```java
     @CreatedDate    // insert 할 때 자동으로 날짜가 들어감
     @Column(nullable = false)
@@ -38,7 +38,7 @@
 @SprintBootTest(webEnvironment = WebEnvironment.MOCK) // 실제로 서버를 띄우지 않고 테스트를 진행할 수 있다.
 ```
 - test 에서는 `@Transactional` 애너테이션의 기본 값이 rollback 으로 동작한다. 그래서 테스트가 끝나면 DB에 반영이 안된다.
-  - `@BeforeEach` 로 테스트를 위한 실제 데이터를 DB에 save 한다면 클래스 레벨에 @Transactional 을 붙여줘야 한다.
+  - `@BeforeEach` 로 테스트에 사용할 실제 데이터를 DB에 insert 한다면 클래스 레벨에 `@Transactional` 어노테이션을 붙여줘야 한다.
 - application.yml 의 `'[org.hibernate.type]': TRACE` : Dynamic Query 의 ? 에 들어가는 값까지 확인할 수 있다.
 - SecurityConfig 작성시 주의사항
   - 최근 공식문서에 따르면 hasRole() 메서드에 더이상 "ROLE_" 를 붙이지 않는다. 붙이면 오히려 Excption 이 발생한다.
@@ -46,7 +46,7 @@
 ```java
 http.authorizeRequests()
     .antMatchers("/api/s/**").authenticated()
-    .antMatchers("/api/admin/**").hasRole(UserEnum.ADMIN.getValue())
+    .antMatchers("/api/admin/**").hasRole(String.valueOf(UserEnum.ADMIN))
     .anyRequest().permitAll();
 return http.build();
 ```
