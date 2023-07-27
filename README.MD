@@ -56,3 +56,23 @@ return http.build();
 ```java
 @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
 ```
+- `@Sql("classpath:sql/teardown.sql")` 을 적용하는 이유
+  - 단순히 `@Transsaction` 애너테이션으로 롤백만 해서는 DB에서 auto_increament로 증가되는 id 값들의 초기화가 되지 않아서 테스트가 쌓이다 보면 우리가 원하지 않는 엉뚱한 값이 나올 수 있기 때문에 깔끔하게 초기화를 해준다.
+  - 이때 table 자체를 drop 하게 되면 불필요한 create table 을 하기 때문에 truncate로 데이터만 날린다.
+  - DB와 관련있는 Controller Test를 작성할 때는 아래 4개 애너테이션을 기본적으로 붙이고 시작하자.
+  - `@Sql("classpath:db/teardown.sql")` 애너테이션을 붙여주면 `@BeforeEach` 실행 직전마다 teardown.sql 을 실행한다.
+```java
+@Sql("classpath:db/teardown.sql")
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+```
+- teardown.sql
+```sql
+SET REFERENTIAL_INTEGRITY FALSE;
+truncate table transaction_tb;
+truncate table account_tb;
+truncate table user_tb;
+SET REFERENTIAL_INTEGRITY TRUE;
+
+```

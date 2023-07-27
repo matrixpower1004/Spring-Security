@@ -9,9 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
 
 import static com.matrix.bank.dto.user.UserReqDto.JoinReqDto;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -23,7 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * date           : 2023-07-23
  * description    :
  */
-@Transactional
+@ActiveProfiles("test")
+@Sql("classpath:db/teardown.sql")
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 class UserControllerTest extends DummyObject {
@@ -34,10 +38,13 @@ class UserControllerTest extends DummyObject {
     private ObjectMapper om;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    EntityManager em;
 
     @BeforeEach
     public void setUp() {
         userRepository.save(newUser("bank", "돈이좋아"));
+        em.clear();
     }
 
     @Test
