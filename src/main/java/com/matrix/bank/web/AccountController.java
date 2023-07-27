@@ -39,12 +39,12 @@ public class AccountController {
     }
 
     // 인증이 필요하고, account 테이블의 1번 row를 주세요!!
-    // cos로 로그인을 했는데, cos의 id가 2번이에요!!
+    // cos로 로그인을 했는데, cos의 id가 2번이에요!! (/s/account/2)
     // 이렇게 붙이면 권한 처리를 해야 하는 번거로움이 있어서 선호하지 않는다.
 
-    // 인증이 필요하고, account 테이블 데이터 다 주세요!!
+    // 인증이 필요하고, account 테이블의 데이터를 다 주세요!!
 
-    // 인증이 필요하고, account 테이블에 login한 유저의 개인을 주세요.
+    // 인증이 필요하고, account 테이블에서 login한 유저의 개좌만 주세요.
     @GetMapping("/s/account/login-user")
     public ResponseEntity<?> findUserAccount(@AuthenticationPrincipal LoginUser loginUser) {
 
@@ -52,5 +52,13 @@ public class AccountController {
                 accountService.viewAccountListByUser(loginUser.getUser().getId());
         return new ResponseEntity<>(new ResponseDto<>(1,
                 "본인 계좌 목록보기 성공", accountListRespDto), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/s/account/{number}")
+    public ResponseEntity<?> deleteAccount(@PathVariable Long number,
+                                           @AuthenticationPrincipal LoginUser loginUser) {
+        accountService.deleteAccount(number, loginUser.getUser().getId());
+        return new ResponseEntity<>(new ResponseDto<>(1,
+                "계좌 삭제 성공", null), HttpStatus.OK);
     }
 }

@@ -20,7 +20,7 @@ public class DummyDevInit extends DummyObject {
     CommandLineRunner init(UserRepository userRepository) {
         return (args) -> {
             // 서버 실행시 무조건 실행된다.
-            User ssar = userRepository.save(newUser("bank", "돈이좋아"));
+            User ssar = userRepository.save(newUser("matrix", "매트릭스"));
         };
     }
 }
