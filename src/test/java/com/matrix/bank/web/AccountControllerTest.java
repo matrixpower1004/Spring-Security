@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,7 +48,7 @@ class AccountControllerTest extends DummyObject {
     // jwt token -> 인증필터 -> 시큐리티 세션생성
     // setupBefore=TEST_METHOD (setUp 메소드 실행 전에 실행)
     // setupBefore = TEST_EXECUTION (save_account_test() 메서드 실행전에 수행)
-    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION) // DB에서 username = ssar 조회를 해서 세션에 담아주는 어노테이션
+    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION) // DB에서 username = bank 조회를 해서 세션에 담아주는 어노테이션
     @Test
     void save_account_test() throws Exception {
         // Given
@@ -65,5 +66,19 @@ class AccountControllerTest extends DummyObject {
 
         // Then
         resultActions.andExpect(status().isCreated());
+    }
+
+    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Test
+    void find_user_account_test() throws Exception {
+        // Given
+
+        // When
+        ResultActions resultActions = mvc.perform(get("/api/s/account/login-user"));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("테스트 : " + responseBody);
+
+        // Then
+        resultActions.andExpect(status().isOk());
     }
 }
