@@ -11,11 +11,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,7 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * date           : 2023-07-25
  * description    :
  */
-@Transactional
+// SpringBootTest 하는 곳에는 전부 다 teardown.sql 을 붙여주자.
+@Sql("classpath:db/teardown.sql") // 실행시점 : @BeforeEach 실행 직전마다!!
 // '[org.hibernate.type]': TRACE -> 쿼리에 들어가는 값까지 확인할 수 있다.
 @ActiveProfiles("test") // application-test.yml 설정을 사용한다.
 @AutoConfigureMockMvc // Mockito 환경에서 MockMvc를 사용할 수 있게 해준다.
