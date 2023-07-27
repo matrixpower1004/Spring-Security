@@ -2,10 +2,7 @@ package com.matrix.bank.dto.account;
 
 import com.matrix.bank.domain.account.Account;
 import com.matrix.bank.domain.user.User;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
@@ -20,6 +17,7 @@ public class AccountReqDto {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class AccountSaveReqDto {
         @NotNull
         @Digits(integer = 4, fraction = 4) // 최대 4자

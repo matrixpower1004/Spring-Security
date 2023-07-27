@@ -3,7 +3,6 @@ package com.matrix.bank.web;
 import com.matrix.bank.config.auth.LoginUser;
 import com.matrix.bank.dto.ResponseDto;
 import com.matrix.bank.dto.account.AccountRespDto.AccountSaveRespDto;
-import com.matrix.bank.handler.ex.CustomForbiddenException;
 import com.matrix.bank.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
-import static com.matrix.bank.service.AccountService.*;
+import static com.matrix.bank.dto.account.AccountRespDto.AccountListRespDto;
 
 /**
  * author         : Jason Lee
@@ -49,13 +48,9 @@ public class AccountController {
     @GetMapping("/s/account/login-user")
     public ResponseEntity<?> findUserAccount(@AuthenticationPrincipal LoginUser loginUser) {
 
-//        if (id != loginUser.getUser().getId()) {
-//            throw new CustomForbiddenException("권한이 없습니다.");
-//        }
-
         AccountListRespDto accountListRespDto =
                 accountService.viewAccountListByUser(loginUser.getUser().getId());
         return new ResponseEntity<>(new ResponseDto<>(1,
-                "본인 계좌 목록보기 성공", accountListRespDto), HttpStatus.CREATED);
+                "본인 계좌 목록보기 성공", accountListRespDto), HttpStatus.OK);
     }
 }
