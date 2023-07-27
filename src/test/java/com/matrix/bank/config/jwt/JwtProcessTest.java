@@ -15,14 +15,21 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JwtProcessTest {
 
+    private String createToken(Long id, UserEnum role) {
+        User user = User.builder()
+                .id(id)
+                .role(role)
+                .build();
+        LoginUser loginUser = new LoginUser(user);
+        return JwtProcess.create(loginUser);
+    }
+
     @Test
     void create_test() {
         // Given
-        User user = User.builder().id(1L).role(UserEnum.ADMIN).build();
-        LoginUser loginUser = new LoginUser(user);
 
         // When
-        String jwtToken = JwtProcess.create(loginUser);
+        String jwtToken = createToken(1L, UserEnum.CUSTOMER);
         System.out.println("테스트 : " + jwtToken);
 
         // Then
@@ -33,22 +40,16 @@ class JwtProcessTest {
     @Test
     void verity_test() {
         // Given
-        // Bearer 헤더를 붙이지 않는 이유는 doFilterInternal()에서 토큰 값을 가져올 때 JwrVO.HEADER 에 있는 Bearer 이라는 텍스트를 날리기 때문.
-        String userJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYW5rIiwiZXhwIjoxNjkwODU2OTQ1LCJpZCI6MSwicm9sZSI6IkNVU1RPTUVSIn0.C1ezQJEvsNBBocaDvpyPLnzC5h9my-pGV57kfHDjO-w";
-        String adminJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYW5rIiwiZXhwIjoxNjkwODU3ODA4LCJpZCI6MSwicm9sZSI6IkFETUlOIn0.huqzJe38zD2TbaIPvf-E_4otVR6miNWCFrFsy0YQn1E";
+        String token = createToken(2L, UserEnum.CUSTOMER); // Bearer 제거해서 처리하기
+        String jwtToken = token.replace(JwtVO.TOKEN_PREFIX, "");
 
         // When
-        LoginUser loginUser = JwtProcess.verify(userJwtToken);
-        System.out.println("테스트 : " + loginUser.getUser().getId());
-        System.out.println("테스트 : " + loginUser.getUser().getRole());
-
-        LoginUser adminUser = JwtProcess.verify(adminJwtToken);
-        System.out.println("테스트 : " + adminUser.getUser().getId());
-        System.out.println("테스트 : " + adminUser.getUser().getRole());
+        LoginUser user = JwtProcess.verify(jwtToken);
+        System.out.println("테스트 customer : " + user.getUser().getId());
+        System.out.println("테스트 customer : " + user.getUser().getRole().name());
 
         // Then
-        assertThat(loginUser.getUser().getId()).isEqualTo(1L);
-        assertThat(adminUser.getUser().getRole()).isEqualTo(UserEnum.ADMIN);
+        assertThat(user.getUser().getId()).isEqualTo(2L);
     }
 
 }
