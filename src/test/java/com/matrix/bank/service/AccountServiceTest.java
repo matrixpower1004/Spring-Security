@@ -7,6 +7,7 @@ import com.matrix.bank.domain.account.Account;
 import com.matrix.bank.domain.account.AccountRepository;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserRepository;
+import com.matrix.bank.handler.ex.CustomApiException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +23,8 @@ import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import static com.matrix.bank.dto.account.AccountRespDto.AccountListRespDto;
 import static com.matrix.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -94,4 +97,18 @@ class AccountServiceTest extends DummyObject {
         assertThat(accountListRespDto.getAccounts().size()).isEqualTo(2);
     }
 
+    @Test
+    void account_delete_test() {
+        // Given
+        Long number = 1111L;
+        Long userId = 2L;
+
+        // stub : findByNumber에 대한 stub이 필요하다.
+        User mockUser = newMockUser(1L, "bank", "돈이좋아");
+        Account mockAccount = newMockAccount(1L, number, 10000L, mockUser);
+        when(accountRepository.findByNumber(any())).thenReturn(Optional.of(mockAccount));
+
+        // When & Then
+        assertThrows(CustomApiException.class, () -> accountService.deleteAccount(number, userId));
+    }
 }

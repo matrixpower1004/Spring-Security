@@ -14,7 +14,9 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     // 여기에 대한 쿼리가 필요하지만 자동으로 생성된다. JPA query method
     // select * from account where number = :number
-    // todo: 리팩토링 예정!! (계좌 소유자 확인 시에 쿼리가 두번 나가는 것을 수정해아 함. join fetch)
+    // 신경 안 써도 됨 : 계좌 소유자 확인시에 쿼리가 두번 나가기 때문에 join fetch을 해야 하나?) - account.getUser().getId()
+    // join fetch를 하면 조인해서 객체의 값을 미리 가져올 수 있다.
+//    @Query("SELECT ac FROM Account ac JOIN FETCH ac.user u WHERE ac.number = :number")
     Optional<Account> findByNumber(Long number);
 
     // jpa query method
