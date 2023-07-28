@@ -6,6 +6,7 @@ import com.matrix.bank.domain.account.Account;
 import com.matrix.bank.domain.account.AccountRepository;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserRepository;
+import com.matrix.bank.dto.account.AccountReqDto;
 import com.matrix.bank.handler.ex.CustomApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,6 @@ class AccountControllerTest extends DummyObject {
     @Autowired
     private EntityManager em;
 
-
     @BeforeEach
     public void setUp() {
         User bank = userRepository.save(newUser("bank", "돈이좋아"));
@@ -66,7 +66,8 @@ class AccountControllerTest extends DummyObject {
     // jwt token -> 인증필터 -> 시큐리티 세션생성
     // setupBefore=TEST_METHOD (setUp 메소드 실행 전에 실행)
     // setupBefore = TEST_EXECUTION (save_account_test() 메서드 실행전에 수행)
-    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION) // DB에서 username = bank 조회를 해서 세션에 담아주는 어노테이션
+    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    // DB에서 username = bank 조회를 해서 세션에 담아주는 어노테이션
     @Test
     void save_account_test() throws Exception {
         // Given
@@ -121,8 +122,33 @@ class AccountControllerTest extends DummyObject {
         // Then
         // Junit test에서 delete 쿼리는 DB 관련(DML)으로 가장 마지막에 실행되면 발동 안함.
         assertThrows(CustomApiException.class, () ->
-                        accountRepository.findByNumber(number).orElseThrow(
-                                () -> new CustomApiException("계좌를 찾을 수 없습니다."))
-                );
+                accountRepository.findByNumber(number).orElseThrow(
+                        () -> new CustomApiException("계좌를 찾을 수 없습니다."))
+        );
+    }
+
+    @Test
+    void deposit_account_test() throws Exception {
+        // Given
+        AccountReqDto.AccountDepositReqDto accountDepositReqDto =
+                AccountReqDto.AccountDepositReqDto.builder()
+                        .number(1111L)
+                        .amount(100L)
+                        .classify("DEPOSIT")
+                        .tel("010123345678")
+                        .build();
+        String requestBody = om.writeValueAsString(accountDepositReqDto);
+        System.out.println("테스트 : " + requestBody);
+
+        // When
+        ResultActions resultActions = mvc.perform(post("/api/account/deposit")
+                .content(requestBody)
+                .contentType(MediaType.APPLICATION_JSON));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("테스트 : " + responseBody);
+
+        // Then
+        resultActions.andExpect(status().isCreated()); // Dto가 잘 만들어졌는지 확인
+        // 입금 후 잔액이 맞는지 여부는 Service에서 테스트 하고 와야 한다.
     }
 }

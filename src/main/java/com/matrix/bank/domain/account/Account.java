@@ -71,4 +71,8 @@ public class Account {
             throw new CustomApiException("계좌의 소유주가 아닙니다.");
         }
     }
+
+    public void deposit(Long amount) {
+        this.balance += amount;
+    }
 }

@@ -31,7 +31,7 @@ public class Transaction {
     private Account withdrawAccount;    // 출금계좌
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Account  depositAccount;     // 입금계좌
+    private Account depositAccount;     // 입금계좌
 
     private Long amount;    // 거래금액
     private Long withdrawAccountBalance;   // 출금계좌 잔액의 history
@@ -39,7 +39,7 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionEnum gubun;  // WHTHDRAW, DEPOSIT, TRANSFER, ALL
+    private TransactionEnum classify;  // WHTHDRAW, DEPOSIT, TRANSFER, ALL
 
     // 계좌가 사라져도 로그는 남아야 한다.
     private String sender;
@@ -55,14 +55,14 @@ public class Transaction {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Transaction(Long id, Account withdrawAccount, Account depositAccount, Long amount, Long withdrawAccountBalance, Long depositAccountBalance, TransactionEnum gubun, String sender, String receiver, String tel, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Transaction(Long id, Account withdrawAccount, Account depositAccount, Long amount, Long withdrawAccountBalance, Long depositAccountBalance, TransactionEnum classify, String sender, String receiver, String tel, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.withdrawAccount = withdrawAccount;
         this.depositAccount = depositAccount;
         this.amount = amount;
         this.withdrawAccountBalance = withdrawAccountBalance;
         this.depositAccountBalance = depositAccountBalance;
-        this.gubun = gubun;
+        this.classify = classify;
         this.sender = sender;
         this.receiver = receiver;
         this.tel = tel;

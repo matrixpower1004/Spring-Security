@@ -1,9 +1,11 @@
 package com.matrix.bank.dto.account;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.matrix.bank.domain.account.Account;
+import com.matrix.bank.domain.transaction.Transaction;
 import com.matrix.bank.domain.user.User;
-import lombok.Getter;
-import lombok.Setter;
+import com.matrix.bank.util.CustomDateUtil;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +58,45 @@ public class AccountRespDto {
                 this.id = account.getId();
                 this.number = account.getNumber();
                 this.balance = account.getBalance();
+            }
+        }
+    }
+
+    @Setter
+    @Getter
+    public static class AccountDepositRespDto {
+        private Long id;                    // 계좌 id
+        private Long number;                // 계좌번호
+        private TransactionDto transaction;    // 트랜잭션 로그
+
+        public AccountDepositRespDto(Account account, Transaction transaction) {
+            this.id = account.getId();
+            this.number = account.getNumber();
+            this.transaction = new TransactionDto(transaction);
+        }
+
+        @Setter
+        @Getter
+        public class TransactionDto {
+            private Long id;
+            private String classify;
+            private String sender;
+            private String receiver;
+            private Long amount;
+            private String tel;
+            private String createdAt;
+            @JsonIgnore
+            private Long depositAccountBalance; // 내 계좌가 아니기 때문에 클라이언트에게 전달 X -> 서비스단에서 테스트 용도
+
+            public TransactionDto(Transaction transaction) {
+                this.id = transaction.getId();
+                this.classify = transaction.getClassify().getValue();
+                this.sender = transaction.getSender();
+                this.receiver = transaction.getReceiver();
+                this.amount = transaction.getAmount();
+                this.depositAccountBalance = transaction.getDepositAccountBalance();
+                this.tel = transaction.getTel();
+                this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
             }
         }
     }

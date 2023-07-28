@@ -2,6 +2,8 @@ package com.matrix.bank.web;
 
 import com.matrix.bank.config.auth.LoginUser;
 import com.matrix.bank.dto.ResponseDto;
+import com.matrix.bank.dto.account.AccountReqDto;
+import com.matrix.bank.dto.account.AccountRespDto;
 import com.matrix.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 import com.matrix.bank.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import static com.matrix.bank.dto.account.AccountReqDto.*;
 import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import static com.matrix.bank.dto.account.AccountRespDto.*;
 import static com.matrix.bank.dto.account.AccountRespDto.AccountListRespDto;
 
 /**
@@ -60,5 +64,13 @@ public class AccountController {
         accountService.deleteAccount(number, loginUser.getUser().getId());
         return new ResponseEntity<>(new ResponseDto<>(1,
                 "계좌 삭제 성공", null), HttpStatus.OK);
+    }
+
+    @PostMapping("/account/deposit")
+    public ResponseEntity<?> depositAccount(
+            @RequestBody @Valid AccountDepositReqDto accountDepositReqDto,
+            BindingResult bindingResult) {
+        AccountDepositRespDto accountDepositRespDto = accountService.depositAccount(accountDepositReqDto);
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌입금완료", accountDepositRespDto), HttpStatus.CREATED);
     }
 }

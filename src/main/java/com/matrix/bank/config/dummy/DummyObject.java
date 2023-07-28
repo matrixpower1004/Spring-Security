@@ -1,6 +1,8 @@
 package com.matrix.bank.config.dummy;
 
 import com.matrix.bank.domain.account.Account;
+import com.matrix.bank.domain.transaction.Transaction;
+import com.matrix.bank.domain.transaction.TransactionEnum;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserEnum;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,6 +15,30 @@ import java.time.LocalDateTime;
  * description    :
  */
 public class DummyObject {
+
+    // 계좌 1111L, 1000원
+    // 입금 트랜잭션 -> 계좌 100원 변경 후 -> 입금 트랜잭션 히스토리가 생성되어야 함.
+    protected static Transaction newMockDeposiTransaction(Long id, Account account) {
+        account.deposit(100L);
+        Transaction transaction = Transaction.builder()
+                .id(id)
+                .withdrawAccount(null)
+                .depositAccount(account)
+                .withdrawAccountBalance(null)
+                .depositAccountBalance(account.getBalance())
+                .amount(100L)
+                .classify(TransactionEnum.DEPOSIT)
+                .sender("ATM")
+                .receiver(String.valueOf(account.getNumber()))
+                .tel("01012345678")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        return transaction;
+
+    }
+
+
     // entity에 save() 할 때 사용
     protected User newUser(String username, String fullname) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

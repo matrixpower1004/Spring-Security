@@ -70,10 +70,31 @@ public class RegxTest {
 
     @Test
     void user_email_test() {
-        String email = "matrixdsafdsafdsfa@nate.com";   // ac.kr, co.kr, or.kr 은 안 됨.
+        String email = "matrixdsafdsafdsfa@nate.com";
         boolean result = Pattern.matches("^[a-zA-Z0-9]{2,6}@[a-zA-Z0-9]{2,6}\\.[a-zA-Z]{2,3}", email);
         System.out.println("테스트 : " + result);
 
+    }
+
+    @Test
+    void account_classify_test2() {
+        String classify = "TRANSFER";
+        boolean result = Pattern.matches("^(DEPOSIT|TRANSFER)$", classify);
+        System.out.println("테스트 : " + result);
+    }
+
+    @Test
+    void account_tel_test() {
+        String tel = "01012345678";
+        boolean result = Pattern.matches("[0-9]{3}[0-9]{3,4}[0-9]{4}", tel);
+        System.out.println("테스트 : " + result);
+    }
+
+    @Test
+    void account_tel_test2() {
+        String tel = "023641234";
+        boolean result = Pattern.matches("[0-9]{9,11}", tel);
+        System.out.println("테스트 : " + result);
     }
 
 }
