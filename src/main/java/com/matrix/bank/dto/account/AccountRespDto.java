@@ -147,4 +147,46 @@ public class AccountRespDto {
             }
         }
     }
+
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    public static class AccountTransferRespDto {
+        private Long id;                    // 계좌 id
+        private Long number;                // 계좌번호
+        private Long balance;               // 출금 계좌 잔액
+        private TransactionDto transaction;    // 트랜잭션 로그
+
+        @Builder
+        public AccountTransferRespDto(Account account, Transaction transaction) {
+            this.id = account.getId();
+            this.number = account.getNumber();
+            this.balance = account.getBalance();
+            this.transaction = new TransactionDto(transaction);
+        }
+
+        @Setter
+        @Getter
+        @NoArgsConstructor
+        public class TransactionDto {
+            private Long id;
+            private String classify;
+            private String sender;
+            private String receiver;
+            private Long amount;
+//            @JsonIgnore // 테스트에서 입금 계좌 잔액을 확인하고 싶을 때 잠시 주석 풀고 확인한 후 다시 주석 처리
+            private Long depositAccountBalance; // 입금 계좌 잔액은 외부에 노출시키면 안 된다.
+            private String createdAt;
+
+            public TransactionDto(Transaction transaction) {
+                this.id = transaction.getId();
+                this.classify = transaction.getClassify().getValue();
+                this.sender = transaction.getSender();
+                this.receiver = transaction.getReceiver();
+                this.amount = transaction.getAmount();
+                this.depositAccountBalance = transaction.getDepositAccountBalance();
+                this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
+            }
+        }
+    }
 }

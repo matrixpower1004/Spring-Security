@@ -179,4 +179,31 @@ class AccountControllerTest extends DummyObject {
         // then
         resultActions.andExpect(status().isCreated());
     }
+
+    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Test
+    void transfer_account_test() throws Exception {
+        // given
+        AccountTransferReqDto accountTransferReqDto =
+                AccountTransferReqDto.builder()
+                        .withdrawNumber(1111L)
+                        .depositNumber(2222L)
+                        .withdrawPassword(1234L)
+                        .amount(100L)
+                        .classify("TRANSFER")
+                        .build();
+
+        String requestBody = om.writeValueAsString(accountTransferReqDto);
+        System.out.println("테스트 : " + requestBody);
+
+        // when
+        ResultActions resultActions = mvc.perform(post("/api/s/account/transfer")
+                .content(requestBody)
+                .contentType(MediaType.APPLICATION_JSON));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("테스트 : " + responseBody);
+
+        // then
+        resultActions.andExpect(status().isCreated());
+    }
 }
