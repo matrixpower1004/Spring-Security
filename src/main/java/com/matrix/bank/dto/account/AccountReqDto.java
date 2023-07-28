@@ -95,4 +95,36 @@ public class AccountReqDto {
             this.classify = classify;
         }
     }
+
+    @NoArgsConstructor
+    @Setter
+    @Getter
+    public static class AccountTransferReqDto {
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long withdrawNumber;
+
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long depositNumber;
+
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long withdrawPassword;
+
+        @NotNull
+        private Long amount;
+
+        @Pattern(regexp = "TRANSFER")
+        private String classify; // DEPOSIT
+
+        @Builder
+        public AccountTransferReqDto(Long withdrawNumber, Long depositNumber, Long withdrawPassword, Long amount, String classify) {
+            this.withdrawNumber = withdrawNumber;
+            this.depositNumber = depositNumber;
+            this.withdrawPassword = withdrawPassword;
+            this.amount = amount;
+            this.classify = classify;
+        }
+    }
 }

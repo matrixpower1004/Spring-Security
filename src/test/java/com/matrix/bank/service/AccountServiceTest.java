@@ -246,4 +246,53 @@ class AccountServiceTest extends DummyObject {
         // Then
         assertThat(bankAccount.getBalance()).isEqualTo(balance - amount);
     }
+
+    // 완벽한 테스트는 존재할 수 없다.
+    // 꼼꼼하게 값을 테스트해봐야 한다.
+    @DisplayName("계좌 이체 테스트")
+    @Test
+    void account_transfer_test() throws Exception {
+        // given
+        Long userId = 1L;
+        AccountTransferReqDto accountTransferReqDto =
+                AccountTransferReqDto.builder()
+                        .withdrawNumber(1111L)      // 출금 계좌
+                        .depositNumber(2222L)       // 입금 계좌
+                        .withdrawPassword(1234L)    // 출금계좌 비밀번호
+                        .amount(100L)               // 이체 금액
+                        .classify("TRANSFER")
+                        .build();
+
+        User withdrawUser = newMockUser(1L, "bank", "돈이좋아");
+        User depositUser = newMockUser(2L, "matrix", "매트릭스");
+
+        Account withdrawAccount = newMockAccount(1L, 1111L, 1000L, withdrawUser);
+        Account depositAccount = newMockAccount(2L, 2222L, 1000L, depositUser);
+        // stub이 꼭 필요한지 테스트 하기 전에 생각해 보자. -> 필요 없다면, 굳이 만들지 말자.
+
+        // when
+        // 츨금계좌와 입금계좌가 같으면 안 된다. -> 같으면 예외가 발생해야 한다.
+        checkSameAccount.accept(accountTransferReqDto.getWithdrawNumber(),
+                accountTransferReqDto.getDepositNumber());
+
+        // 0원 체크
+        checkAmount.accept(accountTransferReqDto.getAmount());
+
+        // 출금 계좌 소유자와 로그인한 유저가 같은지 확인
+        withdrawAccount.checkOwner(userId);
+
+        // 출금 계좌 비밀번호 확인
+        withdrawAccount.checkSamePassword(accountTransferReqDto.getWithdrawPassword());
+
+        // 출금 계좌 잔액 확인
+        withdrawAccount.checkBalance(accountTransferReqDto.getAmount());
+
+        // 이체하기
+        withdrawAccount.withdraw(accountTransferReqDto.getAmount());
+        depositAccount.deposit(accountTransferReqDto.getAmount());
+
+        // then
+        assertThat(withdrawAccount.getBalance()).isEqualTo(900L);
+        assertThat(depositAccount.getBalance()).isEqualTo(1100L);
+    }
 }

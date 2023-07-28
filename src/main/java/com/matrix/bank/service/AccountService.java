@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.matrix.bank.dto.account.AccountReqDto.*;
@@ -170,9 +171,70 @@ public class AccountService {
         return new AccountWithdrawRespDto(withdrawAccountPS, transactionPS);
     }
 
+    @Transactional
+    public AccountTransferRespDto transferAccount(AccountTransferReqDto accountTransferReqDto, Long userId) {
+
+        // 출금계좌와 입급계좌가 동일하면 안 된다.
+        checkSameAccount.accept(accountTransferReqDto.getWithdrawNumber(),
+                accountTransferReqDto.getDepositNumber());
+
+        // 0원 체크
+        checkAmount.accept(accountTransferReqDto.getAmount());
+
+        // 출금 계좌가 존재하는지 확인
+        Account withdrawAccountPS = accountRepository.findByNumber(accountTransferReqDto.getWithdrawNumber())
+                .orElseThrow(
+                        () -> new CustomApiException("츨금 계좌를 찾을 수 없습니다. 계좌번호 = "
+                                + accountTransferReqDto.getWithdrawNumber())
+                );
+
+        // 입금 계좌가 존재하는지 확인
+        Account depositAccountPS = accountRepository.findByNumber(accountTransferReqDto.getDepositNumber())
+                .orElseThrow(
+                        () -> new CustomApiException("입금 계좌를 찾을 수 없습니다. 계좌번호 = "
+                                + accountTransferReqDto.getWithdrawNumber())
+                );
+
+        // 출금 계좌 소유자와 로그인한 유저가 같은지 확인
+        withdrawAccountPS.checkOwner(userId);
+
+        // 출금 계좌 비밀번호 확인
+        withdrawAccountPS.checkSamePassword(accountTransferReqDto.getWithdrawPassword());
+
+        // 출금 계좌 잔액 확인
+        withdrawAccountPS.checkBalance(accountTransferReqDto.getAmount());
+
+        // 이체하기
+        withdrawAccountPS.withdraw(accountTransferReqDto.getAmount());
+        depositAccountPS.deposit(accountTransferReqDto.getAmount());
+
+        // 거래내역 남기기 (내 계좌 -> ATM 츨금)
+        Transaction transaction = Transaction.builder()
+                .withdrawAccount(withdrawAccountPS)
+                .depositAccount(depositAccountPS)
+                .withdrawAccountBalance(withdrawAccountPS.getBalance())
+                .depositAccountBalance(depositAccountPS.getBalance())
+                .amount(accountTransferReqDto.getAmount())
+                .classify(TransactionEnum.TRANSFER)
+                .sender(String.valueOf(accountTransferReqDto.getWithdrawNumber()))
+                .receiver(String.valueOf(accountTransferReqDto.getDepositNumber()))
+                .build();
+
+        Transaction transactionPS = transactionRepository.save(transaction);
+
+        // DTO 응답
+        return new AccountTransferRespDto(withdrawAccountPS, transactionPS);
+    }
+
     public static final Consumer<Long> checkAmount = amount -> {
         if (amount < 1L) {
             throw new CustomApiException("입금 금액은 1원 이상이어야 합니다.");
+        }
+    };
+
+    public static final BiConsumer<Long, Long> checkSameAccount = (withdrawNumber, depositNumber) -> {
+        if (withdrawNumber.longValue() == depositNumber.longValue()) {
+            throw new CustomApiException("출금계좌와 입금계좌가 같을 수 없습니다.");
         }
     };
 }
