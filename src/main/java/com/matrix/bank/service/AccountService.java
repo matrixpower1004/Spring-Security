@@ -2,17 +2,28 @@ package com.matrix.bank.service;
 
 import com.matrix.bank.domain.account.Account;
 import com.matrix.bank.domain.account.AccountRepository;
+import com.matrix.bank.domain.transaction.Transaction;
+import com.matrix.bank.domain.transaction.TransactionEnum;
+import com.matrix.bank.domain.transaction.TransactionRepository;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserRepository;
+import com.matrix.bank.dto.account.AccountReqDto;
+import com.matrix.bank.dto.account.AccountRespDto;
 import com.matrix.bank.handler.ex.CustomApiException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import static com.matrix.bank.dto.account.AccountReqDto.*;
 import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
+import static com.matrix.bank.dto.account.AccountRespDto.*;
 import static com.matrix.bank.dto.account.AccountRespDto.AccountListRespDto;
 import static com.matrix.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 
@@ -26,8 +37,11 @@ import static com.matrix.bank.dto.account.AccountRespDto.AccountSaveRespDto;
 @Service
 public class AccountService {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
 
     @Transactional
     public AccountSaveRespDto createAccount(AccountSaveReqDto accountSaveReqDto, Long userId) {
@@ -73,4 +87,50 @@ public class AccountService {
         accountRepository.deleteById(accountPS.getId());
     }
 
+    // 계좌 입금 -> 인증이 필요 없다.
+    @Transactional
+    public AccountDepositRespDto depositAccount(AccountDepositReqDto accountDepositReqDto) { // ATM -> 누군가의 계좌
+
+        // 0원 체크. 입급하는데 1원 이하면 처리할 필요가 있을까?
+        isInvalidAmount.accept(accountDepositReqDto.getAmount());
+
+        // 입금 계좌가 존재하는지 확인
+        Account depositAccountPS = accountRepository.findByNumber(accountDepositReqDto.getNumber())
+                .orElseThrow(
+                        () -> new CustomApiException("입금 계좌를 찾을 수 없습니다. 계좌번호 = "
+                                + accountDepositReqDto.getNumber())
+        );
+
+        // 임금 (해당 계좌 balance 조정 - update 쿼리 - 더티 체킹)
+        depositAccountPS.deposit(accountDepositReqDto.getAmount());
+        // Todo. 배포 전에 삭제할 것
+//        System.out.println("테스트 - account1 잔액 : " + depositAccountPS.getBalance());
+
+        // 거래 내역 남기기
+        Transaction transaction = Transaction.builder()
+                .depositAccount(depositAccountPS)
+                .withdrawAccount(null)
+                .depositAccountBalance(depositAccountPS.getBalance())
+                .withdrawAccountBalance(null)
+                .amount(accountDepositReqDto.getAmount())
+                .classify(TransactionEnum.DEPOSIT)
+                .sender("ATM")
+                .receiver(String.valueOf(depositAccountPS.getNumber()))
+                .tel(accountDepositReqDto.getTel())
+                .build();
+
+        Transaction transactionPS = transactionRepository.save(transaction);
+
+        // 계좌 입급이 잘되었다고 응답을 하는 Dto를 만들어준다.
+        // Entity를 Controller 쪽으로 응답을 하지 않는다. Lazy loading 때문에 문제가 발생할 수 있다.
+        return new AccountDepositRespDto(depositAccountPS, transactionPS);
+    }
+
+//    public static final Predicate<Long> isInvalidAmount = amount -> amount <= 0L;
+
+    public static final Consumer<Long> isInvalidAmount = amount -> {
+        if (amount < 1L) {
+            throw new CustomApiException("입금 금액은 1원 이상이어야 합니다.");
+        }
+    };
 }
