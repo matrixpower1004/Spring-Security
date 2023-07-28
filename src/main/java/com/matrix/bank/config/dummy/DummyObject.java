@@ -38,7 +38,6 @@ public class DummyObject {
 
     }
 
-
     // entity에 save() 할 때 사용
     protected User newUser(String username, String fullname) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

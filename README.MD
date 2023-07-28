@@ -76,3 +76,4 @@ truncate table user_tb;
 SET REFERENTIAL_INTEGRITY TRUE;
 ```
 - Service Test에서 stub이 진행될 때 마다 연관된 객체는 새로 만들어서 주입한다. stub1에서 만든 객체를 stub2에서 연결해서 사용하면 타이밍 때문에 값이 꼬인다.
+- `@Valid` 애네테이션을 붙인 객체 바로 뒤에 BindingResult가 없으면 Validation이 되지 않는다. - 주의 

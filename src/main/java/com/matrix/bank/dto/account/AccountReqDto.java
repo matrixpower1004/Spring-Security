@@ -68,4 +68,31 @@ public class AccountReqDto {
             this.tel = tel;
         }
     }
+
+    @NoArgsConstructor
+    @Setter
+    @Getter
+    public static class AccountWithdrawReqDto {
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long number;
+
+        @NotNull
+        @Digits(integer = 4, fraction = 4)
+        private Long password;
+
+        @NotNull
+        private Long amount;
+
+        @Pattern(regexp = "WITHDRAW")
+        private String classify; // DEPOSIT
+
+        @Builder
+        public AccountWithdrawReqDto(Long number, Long password, Long amount, String classify) {
+            this.number = number;
+            this.password = password;
+            this.amount = amount;
+            this.classify = classify;
+        }
+    }
 }
