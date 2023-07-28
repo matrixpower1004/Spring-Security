@@ -1,5 +1,6 @@
 package com.matrix.bank.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matrix.bank.config.dummy.DummyObject;
 import com.matrix.bank.domain.account.Account;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import javax.persistence.EntityManager;
 
+import static com.matrix.bank.dto.account.AccountReqDto.*;
 import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -72,16 +74,16 @@ class AccountControllerTest extends DummyObject {
     void save_account_test() throws Exception {
         // Given
         AccountSaveReqDto accountSaveReqDto = new AccountSaveReqDto(9999L, 1234L);
-        String responseBody = om.writeValueAsString(accountSaveReqDto);
-        System.out.println("테스트 : " + responseBody);
+        String requestBody = om.writeValueAsString(accountSaveReqDto);
+        System.out.println("테스트 : " + requestBody);
 
         // When
         // 시큐리티에 세션이 존재한다면 "/api/s/account"로 접근 가능
         ResultActions resultActions = mvc.perform(post("/api/s/account")
-                .content(responseBody)
+                .content(requestBody)
                 .contentType(MediaType.APPLICATION_JSON));
-        String responseBody2 = resultActions.andReturn().getResponse().getContentAsString();
-        System.out.println("테스트 : " + responseBody2);
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("테스트 : " + responseBody);
 
         // Then
         resultActions.andExpect(status().isCreated());
@@ -130,8 +132,8 @@ class AccountControllerTest extends DummyObject {
     @Test
     void deposit_account_test() throws Exception {
         // Given
-        AccountReqDto.AccountDepositReqDto accountDepositReqDto =
-                AccountReqDto.AccountDepositReqDto.builder()
+        AccountDepositReqDto accountDepositReqDto =
+                AccountDepositReqDto.builder()
                         .number(1111L)
                         .amount(100L)
                         .classify("DEPOSIT")
@@ -150,5 +152,31 @@ class AccountControllerTest extends DummyObject {
         // Then
         resultActions.andExpect(status().isCreated()); // Dto가 잘 만들어졌는지 확인
         // 입금 후 잔액이 맞는지 여부는 Service에서 테스트 하고 와야 한다.
+    }
+
+    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Test
+    void withdraw_account_test() throws Exception {
+        // given
+        AccountWithdrawReqDto accountWithdrawReqDto =
+                AccountWithdrawReqDto.builder()
+                        .number(1111L)
+                        .password(1234L)
+                        .amount(100L)
+                        .classify("WITHDRAW")
+                        .build();
+
+        String requestBody = om.writeValueAsString(accountWithdrawReqDto);
+        System.out.println("테스트 : " + requestBody);
+
+        // when
+        ResultActions resultActions = mvc.perform(post("/api/s/account/withdraw")
+                .content(requestBody)
+                .contentType(MediaType.APPLICATION_JSON));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("테스트 : " + responseBody);
+
+        // then
+        resultActions.andExpect(status().isCreated());
     }
 }

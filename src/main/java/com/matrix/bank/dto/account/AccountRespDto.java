@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class AccountRespDto {
     @Getter
     @Setter
+    @NoArgsConstructor
     public static class AccountSaveRespDto {
         private Long id;
         private Long number;
@@ -33,6 +34,7 @@ public class AccountRespDto {
 
     @Getter
     @Setter
+    @NoArgsConstructor
     public static class AccountListRespDto {
         private String fullname;
         private List<AccountDto> accounts = new ArrayList<>();
@@ -45,6 +47,7 @@ public class AccountRespDto {
         // 서비스에서 entity를 controller로 바로 넘기지 않고 Dto로 바꿔서 응답함.
         @Getter
         @Setter
+        @NoArgsConstructor
         public class AccountDto {
             private Long id;
             private Long number;
@@ -64,11 +67,13 @@ public class AccountRespDto {
 
     @Setter
     @Getter
+    @NoArgsConstructor
     public static class AccountDepositRespDto {
         private Long id;                    // 계좌 id
         private Long number;                // 계좌번호
         private TransactionDto transaction;    // 트랜잭션 로그
 
+        @Builder
         public AccountDepositRespDto(Account account, Transaction transaction) {
             this.id = account.getId();
             this.number = account.getNumber();
@@ -77,6 +82,7 @@ public class AccountRespDto {
 
         @Setter
         @Getter
+        @NoArgsConstructor
         public class TransactionDto {
             private Long id;
             private String classify;
@@ -96,6 +102,47 @@ public class AccountRespDto {
                 this.amount = transaction.getAmount();
                 this.depositAccountBalance = transaction.getDepositAccountBalance();
                 this.tel = transaction.getTel();
+                this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
+            }
+        }
+    }
+
+    // DTO가 똑같아도 재사용하지 않기 (만약 출금할 때 뭔가 조금 DTO가 달라져야 하는데, DTO를 공유하고 있다면 수정 잘못하면 망한다
+    // DTO를 독립적으로 만들어야 하는 이유
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    public static class AccountWithdrawRespDto {
+        private Long id;                    // 계좌 id
+        private Long number;                // 계좌번호
+        private Long balance;               // 계좌 잔액
+        private TransactionDto transaction;    // 트랜잭션 로그
+
+        @Builder
+        public AccountWithdrawRespDto(Account account, Transaction transaction) {
+            this.id = account.getId();
+            this.number = account.getNumber();
+            this.balance = account.getBalance();
+            this.transaction = new TransactionDto(transaction);
+        }
+
+        @Setter
+        @Getter
+        @NoArgsConstructor
+        public class TransactionDto {
+            private Long id;
+            private String classify;
+            private String sender;
+            private String receiver;
+            private Long amount;
+            private String createdAt;
+
+            public TransactionDto(Transaction transaction) {
+                this.id = transaction.getId();
+                this.classify = transaction.getClassify().getValue();
+                this.sender = transaction.getSender();
+                this.receiver = transaction.getReceiver();
+                this.amount = transaction.getAmount();
                 this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
             }
         }

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.stream.Stream;
 
 /**
  * author         : Jason Lee
@@ -74,5 +75,23 @@ public class Account {
 
     public void deposit(Long amount) {
         this.balance += amount;
+    }
+
+    public void checkSamePassword(Long password) {
+        // Long 타입은 ==(비교연산자) 로 비교하면 안된다.
+        if (this.password.longValue() != password.longValue()) {
+            throw new CustomApiException("계좌 비밀번호가 일치하지 않습니다.");
+        }
+    }
+
+    public void checkBalance(Long amount) {
+        if (this.balance < amount) {
+            throw new CustomApiException("계좌의 잔액이 부족합니다.");
+        }
+    }
+
+    public void withdraw(Long amount) {
+        checkBalance(amount); // 안전하게 실행하기 위해서 잔액을 한번 더 체크
+        this.balance -= amount;
     }
 }

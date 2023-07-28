@@ -9,7 +9,7 @@ import com.matrix.bank.domain.transaction.Transaction;
 import com.matrix.bank.domain.transaction.TransactionRepository;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserRepository;
-import com.matrix.bank.dto.account.AccountRespDto;
+import com.matrix.bank.dto.account.AccountReqDto;
 import com.matrix.bank.handler.ex.CustomApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.matrix.bank.dto.account.AccountReqDto.*;
 import static com.matrix.bank.dto.account.AccountReqDto.AccountDepositReqDto;
 import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import static com.matrix.bank.dto.account.AccountRespDto.*;
@@ -208,6 +209,7 @@ class AccountServiceTest extends DummyObject {
     // DB 관련된 것을 조회했을 때, 그 값을 통해서 비즈니스 로직이 흘러가는 것이 필요하면 -> stub으로 정의해서 테스트 해보면 된다.
 
     // DB 스텁, DB 스텁(가짜로 DB 만들어서 deposit 검증, 0원 검증) -> 굳이 이렇게 할 필요는 없다.
+    @DisplayName("계좌 입금 테스트 3")
     @Test
     void account_deposit_test3() {
         // Given
@@ -215,10 +217,33 @@ class AccountServiceTest extends DummyObject {
         Long amount = 100L;
 
         // When
-        isInvalidAmount.accept(amount); // 1원 이하 입금 체크
+        checkAmount.accept(amount); // 1원 이하 입금 체크
         account.deposit(100L);
 
         // Then
         assertThat(account.getBalance()).isEqualTo(1100L);
+    }
+
+    @DisplayName("계좌 출금 테스트")
+    @Test
+    void withdraw_account_test() {
+        // Given
+        Long amount = 100L;
+        Long password = 1234L;
+        Long balance = 1000L;
+        Long userId = 1L;
+
+        User bankUser = newMockUser(userId, "bank", "돈이좋아");
+        Account bankAccount = newMockAccount(1L, 1111L, balance, bankUser);
+
+        // When
+        checkAmount.accept(amount); // 1원 이하 입금 체크
+        bankAccount.checkOwner(userId); // 계좌의 소유주가 다르면 Exception이 발생해야 한다.
+        bankAccount.checkSamePassword(password); // 계좌의 비밀번호가 다르면 Exception이 발생해야 한다.
+        bankAccount.checkBalance(amount); // 계좌의 잔액보다 출금하려는 금액이 크면 Exception이 발생해야 한다.
+        bankAccount.withdraw(amount); // 최종 출금.
+
+        // Then
+        assertThat(bankAccount.getBalance()).isEqualTo(balance - amount);
     }
 }
