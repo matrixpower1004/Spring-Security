@@ -56,11 +56,7 @@ public class SecurityConfig {
         log.debug("디버그 : filterChain Bean 등록됨");
         http.headers().frameOptions().disable();    // ifame 허용 안함
         http.csrf().disable();  // csrf가 걸려있으면 post맨 작동 안함.
-        /**
-         * cors 는 자바스크립트 요청을 거부하는 것. Cross Origin Resource Sharing의 약자로 다른 서버에 있는 프로그램중에
-         * 자바스크립트로 요청되는 것들을 막는 옵션이라 우리 서버에 API 호출이 가능하도록 설정해야 한다.
-         */
-        http.cors().configurationSource(configurationSource()); // todo: cors 설정
+        http.cors().configurationSource(configurationSource()); // cors 허용
 
         // jSessionId를 서버쪽에서 관리하지 않겠다는 뜻!!
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -90,22 +86,24 @@ public class SecurityConfig {
         // https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
         http.authorizeRequests()
                 .antMatchers("/api/s/**").authenticated()
-                .antMatchers("/api/admin/**").hasRole(String.valueOf(UserEnum.ADMIN)) // 최근 공식문서에서는 ROLE_ 안 붙여도 된다.
+                .antMatchers("/api/admin/**").hasRole(UserEnum.ADMIN.name()) // 최근 공식문서에서는 ROLE_ 안 붙여도 된다.
                 .anyRequest().permitAll();
         return http.build();
     }
 
+    // cors 는 자바스크립트 요청을 거부하는 것. Cross Origin Resource Sharing의 약자로 다른 서버에 있는 프로그램중에
+    // 자바스크립트로 요청되는 것들을 막는 옵션이라 우리 서버에 API 호출이 가능하도록 설정해야 한다.
+    // todo : Authorization-Refresh 란?
     public CorsConfigurationSource configurationSource() {
         log.debug("디버그 : configurationSource cors 설정이 SecurityFilterChain에 등록됨");
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedHeader("*");    // 모든 Header 요청을 허용
         configuration.addAllowedMethod("*");    // GET. POST, PUT, DELETE (Javascript 요청 허용)
-        configuration.addAllowedOriginPattern("*.*");   // 모든 IP 주소 허용 (프론트엔드 IP만 허용, react)
+        configuration.addAllowedOriginPattern("*");   // 모든 IP 주소 허용 (프론트엔드 IP만 허용, react)
         configuration.setAllowCredentials(true);    // 클라이언트에서 쿠키 요청 허용
-
+        configuration.addExposedHeader("Authorization"); // CORS-safelisted response header에 해당하지 않는 헤더들은 별도로 추가해 주어야 Javascript에서 접근 가능하다.
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // 모든 주소 요청에 위의 설정을 넣어주겠다는 것
         return source;
     }
 }
-
