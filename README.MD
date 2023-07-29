@@ -38,15 +38,15 @@
 @SprintBootTest(webEnvironment = WebEnvironment.MOCK) // 실제로 서버를 띄우지 않고 테스트를 진행할 수 있다.
 ```
 - test 에서는 `@Transactional` 애너테이션의 기본 값이 rollback 으로 동작한다. 그래서 테스트가 끝나면 DB에 반영이 안 된다.
-  - `@BeforeEach` 로 테스트에 사용할 실제 데이터를 DB에 insert 한다면 클래스 레벨에 `@Transactional` 어노테이션을 붙여줘야 한다.
+- `@BeforeEach` 로 테스트에 사용할 실제 데이터를 DB에 insert 한다면 클래스 레벨에 `@Transactional` 어노테이션을 붙여서 테스트 후 rollback 되도록 해준다.
 - application.yml 의 `'[org.hibernate.type]': TRACE` : Dynamic Query 의 ? 에 들어가는 값까지 확인할 수 있다.
 - SecurityConfig 작성시 주의사항
   - 최근 공식문서에 따르면 hasRole() 메서드에 더이상 접두사 "ROLE_" 를 붙이지 않는다. 붙이면 오히려 Exception 이 발생한다.
-  - https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
+  - reference : https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
 ```java
 http.authorizeRequests()
     .antMatchers("/api/s/**").authenticated()
-    .antMatchers("/api/admin/**").hasRole(String.valueOf(UserEnum.ADMIN))
+    .antMatchers("/api/admin/**").hasRole(UserEnum.ADMIN.name())
     .anyRequest().permitAll();
 return http.build();
 ```
@@ -76,4 +76,18 @@ truncate table user_tb;
 SET REFERENTIAL_INTEGRITY TRUE;
 ```
 - Service Test에서 stub이 진행될 때 마다 연관된 객체는 새로 만들어서 주입한다. stub1에서 만든 객체를 stub2에서 연결해서 사용하면 타이밍 때문에 값이 꼬인다.
-- `@Valid` 애네테이션을 붙인 객체 바로 뒤에 BindingResult가 없으면 Validation이 되지 않는다. - 주의 
+- `@Valid` 애네테이션을 붙인 객체 바로 뒤에 BindingResult가 없으면 Validation이 되지 않는다. -> `주의` 
+## CORS-safelisted response header
+- CORS 허용 목록에 포함된 응답 헤더는 클라이언트 스크립트에 노출해도 안전한 것으로 간주되는 CORS 응답의 HTTP 헤더다.
+- 이 허용 목록에 포함된 응답 헤더만 클라이언트 스크립트(Javascript 등)에서 접근할 수 있다.
+- 클라이언트 스크립트에서 접근 가능한 노출 헤더를 추가하고 싶다면 Security 설정에서 Access-Control-Expose-Headers에 넣어주면 된다.
+- reference : https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_response_header
+- Spring Security 에서는 아래와 같이 설정을 추가해 준다.
+```java
+public CorsConfigurationSource configurationSource(){
+    ...
+    configuration.addExposedHeader("Authorization");
+    ...
+    return source;
+}
+```
