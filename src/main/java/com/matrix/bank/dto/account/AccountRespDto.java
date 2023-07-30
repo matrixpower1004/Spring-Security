@@ -5,7 +5,9 @@ import com.matrix.bank.domain.account.Account;
 import com.matrix.bank.domain.transaction.Transaction;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.util.CustomDateUtil;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +75,6 @@ public class AccountRespDto {
         private Long number;                // 계좌번호
         private TransactionDto transaction;    // 트랜잭션 로그
 
-        @Builder
         public AccountDepositRespDto(Account account, Transaction transaction) {
             this.id = account.getId();
             this.number = account.getNumber();
@@ -118,7 +119,6 @@ public class AccountRespDto {
         private Long balance;               // 계좌 잔액
         private TransactionDto transaction;    // 트랜잭션 로그
 
-        @Builder
         public AccountWithdrawRespDto(Account account, Transaction transaction) {
             this.id = account.getId();
             this.number = account.getNumber();
@@ -157,7 +157,6 @@ public class AccountRespDto {
         private Long balance;               // 출금 계좌 잔액
         private TransactionDto transaction;    // 트랜잭션 로그
 
-        @Builder
         public AccountTransferRespDto(Account account, Transaction transaction) {
             this.id = account.getId();
             this.number = account.getNumber();
@@ -186,6 +185,61 @@ public class AccountRespDto {
                 this.amount = transaction.getAmount();
                 this.depositAccountBalance = transaction.getDepositAccountBalance();
                 this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
+            }
+        }
+    }
+
+    @NoArgsConstructor
+    @Setter
+    @Getter
+    public static class AccountDetailRespDto {
+        private Long id; // 계좌 id
+        private Long number; // 계좌 번호
+        private Long balance; // 계좌의 최종 잔액
+        private List<TransactionDto> transactions = new ArrayList<>();
+
+        public AccountDetailRespDto(Account account, List<Transaction> transactions) {
+            this.id = account.getId();
+            this.number = account.getNumber();
+            this.balance = account.getBalance();
+            this.transactions = transactions.stream()
+                    .map((transaction) -> new TransactionDto(transaction, account.getNumber()))
+                    .collect(Collectors.toList());
+        }
+
+        @NoArgsConstructor
+        @Setter
+        @Getter
+        public class TransactionDto {
+            private Long id;
+            private String classify;
+            private Long amount;
+            private String sender;
+            private String receiver;
+            private String tel;
+            private String createdAt;
+            private Long balance;
+
+            public TransactionDto(Transaction transaction, Long accountNumber) {
+                this.id = transaction.getId();
+                this.classify = transaction.getClassify().getValue();
+                this.amount = transaction.getAmount();
+                this.sender = transaction.getSender();
+                this.receiver = transaction.getReceiver();
+                this.createdAt = CustomDateUtil.toStringFormat(transaction.getCreatedAt());
+                this.tel = transaction.getTel() == null ? "없음" : transaction.getTel();
+
+                if (transaction.getDepositAccount() == null) {
+                    this.balance = transaction.getWithdrawAccountBalance();
+                } else if (transaction.getWithdrawAccount() == null) {
+                    this.balance = transaction.getDepositAccountBalance();
+                } else {
+                    if (accountNumber.longValue() == transaction.getDepositAccount().getNumber().longValue()) {
+                        this.balance = transaction.getDepositAccountBalance();
+                    } else {
+                        this.balance = transaction.getWithdrawAccountBalance();
+                    }
+                }
             }
         }
     }

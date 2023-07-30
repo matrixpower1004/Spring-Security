@@ -77,7 +77,33 @@ SET REFERENTIAL_INTEGRITY TRUE;
 ```
 - Service Test에서 stub이 진행될 때 마다 연관된 객체는 새로 만들어서 주입한다. stub1에서 만든 객체를 stub2에서 연결해서 사용하면 타이밍 때문에 값이 꼬인다.
 - `@Valid` 애네테이션을 붙인 객체 바로 뒤에 BindingResult가 없으면 Validation이 되지 않는다. -> `주의` 
+
+## Repository Test 시 주의사항
 - Repository 테스트 할 때 더미 데이터를 insert 했따면 꼭 insert 후 `em.clear()` 를 실행하여 Persistence Context를 초기화 해줘야 한다. 그렇지 않으면 영속성 컨텍스트에 캐시된 데이터로 인하여 정확한 테스트가 되지 않는다. Repository Test 에서 필수.
+- Repository 테스트 시 아래 2개 애너테이션을 붙여주고 시작하자
+```java
+@ActiveProfiles("test")
+@DataJpaTest
+```
+- Repository 테스트 시 auto_increment 초기화는 Service 테스트와는 방법이 다르다. 아래 코드와 같이 autoIncrement를 reset 하는 메서드를 만들고 `@BeforeEach`에서 호출하자.
+```java
+@Autowired
+private EntityManager em;
+
+@BeforeEach
+public final void setUp() {
+    autoIncrementReset();
+    dataSetting();
+    em.clear(); // Repository test에서 필수
+    }
+
+private void autoIncrementReset() {
+	em.createNativeQuery("ALTER TABLE user_tb ALTER COLUMN id RESTART WITH 1").executeUpdate();
+	em.createNativeQuery("ALTER TABLE account_tb ALTER COLUMN id RESTART WITH 1").executeUpdate();
+	em.createNativeQuery("ALTER TABLE transaction_tb ALTER COLUMN id RESTART WITH 1").executeUpdate();
+}
+```
+- em.clear() 는 DB 관련 테스트에서 필수적으로 넣어야 Persistence Context의 캐시에 의한 오류를 방지할 수 있다.
 ## CORS-safelisted response header
 - CORS 허용 목록에 포함된 응답 헤더는 클라이언트 스크립트에 노출해도 안전한 것으로 간주되는 CORS 응답의 HTTP 헤더다.
 - 이 허용 목록에 포함된 응답 헤더만 클라이언트 스크립트(Javascript 등)에서 접근할 수 있다.

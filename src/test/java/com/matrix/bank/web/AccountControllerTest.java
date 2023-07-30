@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matrix.bank.config.dummy.DummyObject;
 import com.matrix.bank.domain.account.Account;
 import com.matrix.bank.domain.account.AccountRepository;
+import com.matrix.bank.domain.transaction.Transaction;
+import com.matrix.bank.domain.transaction.TransactionRepository;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserRepository;
 import com.matrix.bank.handler.ex.CustomApiException;
@@ -25,6 +27,7 @@ import javax.persistence.EntityManager;
 import static com.matrix.bank.dto.account.AccountReqDto.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -51,14 +54,14 @@ class AccountControllerTest extends DummyObject {
     private AccountRepository accountRepository;
 
     @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private EntityManager em;
 
     @BeforeEach
     public void setUp() {
-        User bank = userRepository.save(newUser("bank", "돈이좋아"));
-        User mind = userRepository.save(newUser("mind", "mind"));
-        Account bankAccount = accountRepository.save(newAccount(1111L, bank));
-        Account mindAccount = accountRepository.save(newAccount(2222L, mind));
+        dataSetting();
         em.clear();
     }
 
@@ -116,7 +119,7 @@ class AccountControllerTest extends DummyObject {
         // delete 요청은 body가 없고 따라서 body를 설명하는 content-type도 필요 없다.
         ResultActions resultActions = mvc.perform(delete("/api/s/account/" + number));
         String responseBody = resultActions.andReturn().getResponse().getContentAsString();
-        System.out.println("테스트 : " + responseBody);
+        System.out.println("테스트 체크 : " + responseBody);
 
         // Then
         // Junit test에서 delete 쿼리는 DB 관련(DML)으로 가장 마지막에 실행되면 발동 안함.
@@ -202,5 +205,48 @@ class AccountControllerTest extends DummyObject {
 
         // then
         resultActions.andExpect(status().isCreated());
+    }
+
+    @WithUserDetails(value = "bank", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Test
+    void findDetailAccount_test() throws Exception {
+        // given
+        Long number = 1111L;
+        String page = "0";
+
+        // when
+        ResultActions resultActions = mvc.perform(get("/api/s/account/" + number)
+                .param("page", page));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("테스트 : " + responseBody);
+
+        // then
+        resultActions.andExpect(jsonPath("$.data.transactions[0].balance").value(900L));
+        resultActions.andExpect(jsonPath("$.data.transactions[1].balance").value(800L));
+        resultActions.andExpect(jsonPath("$.data.transactions[2].balance").value(700L));
+        resultActions.andExpect(jsonPath("$.data.transactions[3].balance").value(800L));
+    }
+
+    private void dataSetting() {
+        User bank = userRepository.save(newUser("bank", "돈이좋아"));
+        User matrix = userRepository.save(newUser("matrix", "매트릭스"));
+        User mind = userRepository.save(newUser("mind", "마인드"));
+        User admin = userRepository.save(newUser("admin", "관리자"));
+
+        Account bankAccount1 = accountRepository.save(newAccount(1111L, bank));
+        Account matrixAccount = accountRepository.save(newAccount(2222L, matrix));
+        Account mindAccount = accountRepository.save(newAccount(3333L, mind));
+        Account bankAccount2 = accountRepository.save(newAccount(4444L, bank));
+
+        Transaction withdrawTransaction1 = transactionRepository
+                .save(newWithdrawTransaction(bankAccount1, accountRepository));
+        Transaction depositTransaction1 = transactionRepository
+                .save(newDepositTransaction(matrixAccount, accountRepository));
+        Transaction transferTransaction1 = transactionRepository
+                .save(newTransferTransaction(bankAccount1, matrixAccount, accountRepository));
+        Transaction transferTransaction2 = transactionRepository
+                .save(newTransferTransaction(bankAccount1, mindAccount, accountRepository));
+        Transaction transferTransaction3 = transactionRepository
+                .save(newTransferTransaction(matrixAccount, bankAccount1, accountRepository));
     }
 }
