@@ -77,6 +77,7 @@ SET REFERENTIAL_INTEGRITY TRUE;
 ```
 - Service Test에서 stub이 진행될 때 마다 연관된 객체는 새로 만들어서 주입한다. stub1에서 만든 객체를 stub2에서 연결해서 사용하면 타이밍 때문에 값이 꼬인다.
 - `@Valid` 애네테이션을 붙인 객체 바로 뒤에 BindingResult가 없으면 Validation이 되지 않는다. -> `주의` 
+- Repository 테스트 할 때 더미 데이터를 insert 했따면 꼭 insert 후 `em.clear()` 를 실행하여 Persistence Context를 초기화 해줘야 한다. 그렇지 않으면 영속성 컨텍스트에 캐시된 데이터로 인하여 정확한 테스트가 되지 않는다. Repository Test 에서 필수.
 ## CORS-safelisted response header
 - CORS 허용 목록에 포함된 응답 헤더는 클라이언트 스크립트에 노출해도 안전한 것으로 간주되는 CORS 응답의 HTTP 헤더다.
 - 이 허용 목록에 포함된 응답 헤더만 클라이언트 스크립트(Javascript 등)에서 접근할 수 있다.
