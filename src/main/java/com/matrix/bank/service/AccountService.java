@@ -226,13 +226,33 @@ public class AccountService {
         return new AccountTransferRespDto(withdrawAccountPS, transactionPS);
     }
 
+    public AccountDetailRespDto viewAccountDetail(Long number, Long userId, int page) {
+        // 1. 구분값은 고정 -> ALL
+        String classify = "ALL";
+
+        // 2. 계좌번호가 존재하는지 확인
+        Account accountPS = accountRepository.findByNumber(number).orElseThrow(
+                () -> new CustomApiException("계좌를 찾을 수 없습니다. 계좌번호 = " + number)
+        );
+
+        // 3. 계좌 소유자와 로그인한 유저가 같은지 확인
+        accountPS.checkOwner(userId);
+
+        // 4. 입출금 목록보기
+        List<Transaction> transactionListPS = transactionRepository.findTransactionList(
+                accountPS.getId(), classify, page);
+
+        return new AccountDetailRespDto(accountPS, transactionListPS);
+    }
+
     public static final Consumer<Long> checkAmount = amount -> {
         if (amount < 1L) {
             throw new CustomApiException("입금 금액은 1원 이상이어야 합니다.");
         }
     };
 
-    public static final BiConsumer<Long, Long> checkSameAccount = (withdrawNumber, depositNumber) -> {
+    public static final BiConsumer<Long, Long> checkSameAccount = (
+            withdrawNumber, depositNumber) -> {
         if (withdrawNumber.longValue() == depositNumber.longValue()) {
             throw new CustomApiException("출금계좌와 입금계좌가 같을 수 없습니다.");
         }

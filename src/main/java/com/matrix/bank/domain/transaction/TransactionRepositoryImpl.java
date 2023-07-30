@@ -17,7 +17,7 @@ interface Dao {
     List<Transaction> findTransactionList(
             @Param("accountId") Long accountId,
             @Param("classify") String classify,
-            @Param("page") Integer page
+            @Param("page") int page
     );
 }
 
@@ -28,7 +28,7 @@ public class TransactionRepositoryImpl implements Dao {
     private final EntityManager em;
 
     @Override
-    public List<Transaction> findTransactionList(Long accountId, String classify, Integer page) {
+    public List<Transaction> findTransactionList(Long accountId, String classify, int page) {
         // 동적쿼리 (classify 값으로 동적쿼리 연동 = DEPOSIT, WITHDRAW, ALL)
         // JPQL 문법
         String sql = "";
