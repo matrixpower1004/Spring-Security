@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * date           : 2023-07-23
  * description    :
  */
-public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+public interface TransactionRepository extends JpaRepository<Transaction, Long>, Dao {
 }

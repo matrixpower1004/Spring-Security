@@ -1,6 +1,7 @@
 package com.matrix.bank.config.dummy;
 
 import com.matrix.bank.domain.account.Account;
+import com.matrix.bank.domain.account.AccountRepository;
 import com.matrix.bank.domain.transaction.Transaction;
 import com.matrix.bank.domain.transaction.TransactionEnum;
 import com.matrix.bank.domain.user.User;
@@ -35,7 +36,6 @@ public class DummyObject {
                 .updatedAt(LocalDateTime.now())
                 .build();
         return transaction;
-
     }
 
     // entity에 save() 할 때 사용
@@ -88,5 +88,75 @@ public class DummyObject {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    protected Transaction newDepositTransaction(Account account, AccountRepository accountRepository) {
+        Long amount = 100L;
+
+        account.deposit(amount); // 출금계좌에 1000원 있었다면 900원이 된다.
+        // Repository Test 에서는 더티체킹이 된다.
+        // 그러나 Controller Test 에서는 더티체킹이 안 된다.
+        // 그래서 이 모듈을 재사용하기 위해서는 내가 직접 save()를 제어해 주면 된다.
+        if (accountRepository != null) {
+            accountRepository.save(account);
+        }
+        Transaction transaction = Transaction.builder()
+                .withdrawAccount(null)
+                .depositAccount(account)
+                .withdrawAccountBalance(null)
+                .depositAccountBalance(account.getBalance())
+                .amount(amount)
+                .classify(TransactionEnum.DEPOSIT)
+                .sender("ATM")
+                .receiver(String.valueOf(account.getNumber()))
+                .tel("01012345678")
+                .build();
+        return transaction;
+    }
+
+    protected Transaction newWithdrawTransaction(Account account, AccountRepository accountRepository) {
+        Long amount = 100L;
+
+        account.withdraw(amount);
+        if (accountRepository != null) {
+            accountRepository.save(account);
+        }
+        Transaction transaction = Transaction.builder()
+                .withdrawAccount(account)
+                .depositAccount(null)
+                .withdrawAccountBalance(account.getBalance())
+                .depositAccountBalance(null)
+                .amount(amount)
+                .classify(TransactionEnum.WITHDRAW)
+                .sender(String.valueOf(account.getNumber()))
+                .receiver("ATM")
+                .build();
+        return transaction;
+    }
+
+    protected Transaction newTransferTransaction(
+            Account withdrawAccount, Account depositAccount, AccountRepository accountRepository
+    ) {
+        Long amount = 100L;
+
+        withdrawAccount.withdraw(amount);
+        depositAccount.deposit(amount);
+
+        if (accountRepository != null) {
+            accountRepository.save(withdrawAccount);
+            accountRepository.save(depositAccount);
+        }
+
+        Transaction transaction = Transaction.builder()
+                .withdrawAccount(withdrawAccount)
+                .depositAccount(depositAccount)
+                .withdrawAccountBalance(withdrawAccount.getBalance())
+                .depositAccountBalance(depositAccount.getBalance())
+                .amount(amount)
+                .classify(TransactionEnum.TRANSFER)
+                .sender(String.valueOf(withdrawAccount.getNumber()))
+                .receiver(String.valueOf(depositAccount.getNumber()))
+                .build();
+        return transaction;
     }
 }

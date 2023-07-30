@@ -1,13 +1,11 @@
 package com.matrix.bank.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matrix.bank.config.dummy.DummyObject;
 import com.matrix.bank.domain.account.Account;
 import com.matrix.bank.domain.account.AccountRepository;
 import com.matrix.bank.domain.user.User;
 import com.matrix.bank.domain.user.UserRepository;
-import com.matrix.bank.dto.account.AccountReqDto;
 import com.matrix.bank.handler.ex.CustomApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +23,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import javax.persistence.EntityManager;
 
 import static com.matrix.bank.dto.account.AccountReqDto.*;
-import static com.matrix.bank.dto.account.AccountReqDto.AccountSaveReqDto;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
