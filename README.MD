@@ -12,6 +12,10 @@
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 ```
+### Spring Security 설정 방범 변경(without WebSecurityConfigurerAdapter)
+스프링 부트 2.7(스프링 시큐리티 5.7) 부터 시큐리티 설정 방법이 변경되었다. WebSecurityConfigurerAdapter는 deprecated되었고, SecurityFilterChain을 사용해야 한다.
+- https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.7-Release-Notes#migrating-from-websecurityconfigureradapter-to-securityfilterchain
+- https://spring.io/blog/2022/02/21/spring-security-without-the-websecurityconfigureradapter
 
 ### 학습 노트
 - 스프링이 객체를 생성할 때 빈 생성자로 new 을 하기 때문에 parameter를 주입 받는 생성자를 수동으로 만들었다면 `@NoArgsConstructor` 를 꼭 넣어줘야 한다.
